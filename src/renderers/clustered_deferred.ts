@@ -1,6 +1,7 @@
 import * as renderer from '../renderer';
 import * as shaders from '../shaders/shaders';
 import { Stage } from '../stage/stage';
+import { timer } from '../benchmark';
 
 export class ClusteredDeferredRenderer extends renderer.Renderer {
     // TODO-3: add layouts, pipelines, textures, etc. needed for Forward+ here
@@ -197,6 +198,7 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         //setup the gbuffpass
         const gbuffpass = encoder.beginRenderPass({
             label: "g buffer pass",
+            timestampWrites: timer.passWrites('gbuffer'),
             colorAttachments: [
                 { view: this.posView, 
                     clearValue: [0, 0, 0, 0], 
@@ -233,6 +235,7 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         const fullscreenRenderPass = 
         encoder.beginRenderPass({
             label: "deferred fullscreen pass",
+            timestampWrites: timer.passWrites('fullscreen'),
             colorAttachments: [
                 {
                     view: canvasTextureView,
@@ -250,6 +253,8 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         fullscreenRenderPass.draw(3);
         fullscreenRenderPass.end();
 
+        const handle = timer.resolve(encoder, ['clustering', 'gbuffer', 'fullscreen']);
         renderer.device.queue.submit([encoder.finish()]);
+        timer.collect(handle);
     }
 }

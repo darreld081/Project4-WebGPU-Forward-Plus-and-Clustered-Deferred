@@ -1,6 +1,7 @@
 import * as renderer from '../renderer';
 import * as shaders from '../shaders/shaders';
 import { Stage } from '../stage/stage';
+import { timer } from '../benchmark';
 
 export class ForwardPlusRenderer extends renderer.Renderer {
     // TODO-2: add layouts, pipelines, textures, etc. needed for Forward+ here
@@ -98,6 +99,7 @@ export class ForwardPlusRenderer extends renderer.Renderer {
 
         const renderPass = encoder.beginRenderPass({
             label: "forward plus render pass",
+            timestampWrites: timer.passWrites('main'),
             colorAttachments: [
                 {
                     view: canvasTextureView,
@@ -129,6 +131,8 @@ export class ForwardPlusRenderer extends renderer.Renderer {
 
         renderPass.end();
 
+        const handle = timer.resolve(encoder, ['clustering', 'main']);
         renderer.device.queue.submit([encoder.finish()]);
+        timer.collect(handle);
     }
 }

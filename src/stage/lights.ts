@@ -3,6 +3,7 @@ import { device } from "../renderer";
 
 import * as shaders from '../shaders/shaders';
 import { Camera } from "./camera";
+import { timer, benchMode, metrics } from "../benchmark";
 
 // h in [0, 1]
 function hueToRgb(h: number) {
@@ -173,7 +174,10 @@ export class Lights {
     doLightClustering(encoder: GPUCommandEncoder) {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
-        const computePass = encoder.beginComputePass({ label: "light clustering pass" });
+        const computePass = encoder.beginComputePass({
+            label: "light clustering pass",
+            timestampWrites: timer.passWrites('clustering')
+        });
         //setup the pupeline
         computePass.setPipeline(this.clusteringComputePipeline);
 
@@ -187,12 +191,14 @@ export class Lights {
 
     // CHECKITOUT: this is where the light movement compute shader is dispatched from the host
     onFrame(time: number) {
-        device.queue.writeBuffer(this.timeUniformBuffer, 0, new Float32Array([time]));
+        // in bench mode, drive light motion by frame count so every run sees the same light positions
+        const t = benchMode ? metrics.frame * (1000 / 60) : time;
+        device.queue.writeBuffer(this.timeUniformBuffer, 0, new Float32Array([t]));
 
         // not using same encoder as render pass so this doesn't interfere with measuring actual rendering performance
         const encoder = device.createCommandEncoder();
 
-        const computePass = encoder.beginComputePass();
+        const computePass = encoder.beginComputePass({ timestampWrites: timer.passWrites('moveLights') });
         computePass.setPipeline(this.moveLightsComputePipeline);
 
         computePass.setBindGroup(0, this.moveLightsComputeBindGroup);
@@ -202,6 +208,8 @@ export class Lights {
 
         computePass.end();
 
+        const handle = timer.resolve(encoder, ['moveLights']);
         device.queue.submit([encoder.finish()]);
+        timer.collect(handle);
     }
 }

@@ -2,12 +2,15 @@ import { Scene } from './stage/scene';
 import { Lights } from './stage/lights';
 import { Camera } from './stage/camera';
 import { Stage } from './stage/stage';
+import { onFrame as benchOnFrame } from './benchmark';
 
 export var canvas: HTMLCanvasElement;
 export var canvasFormat: GPUTextureFormat;
 export var context: GPUCanvasContext;
 export var device: GPUDevice;
 export var canvasTextureView: GPUTextureView;
+
+export var timestampsSupported = false;
 
 export var aspectRatio: number;
 export const fovYDegrees = 45;
@@ -19,9 +22,11 @@ export var materialBindGroupLayout: GPUBindGroupLayout;
 export async function initWebGPU() {
     canvas = document.getElementById("mainCanvas") as HTMLCanvasElement;
 
+    // ?width=&height= pin the render resolution (useful for comparable benchmarks)
+    const urlParams = new URLSearchParams(window.location.search);
     const devicePixelRatio = window.devicePixelRatio;
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
+    canvas.width = Number(urlParams.get('width')) || canvas.clientWidth * devicePixelRatio;
+    canvas.height = Number(urlParams.get('height')) || canvas.clientHeight * devicePixelRatio;
 
     aspectRatio = canvas.width / canvas.height;
 
@@ -41,7 +46,10 @@ export async function initWebGPU() {
         throw new Error("no appropriate GPUAdapter found");
     }
 
-    device = await adapter.requestDevice();
+    timestampsSupported = adapter.features.has('timestamp-query');
+    device = await adapter.requestDevice({
+        requiredFeatures: timestampsSupported ? ['timestamp-query'] : []
+    });
 
     context = canvas.getContext("webgpu")!;
     canvasFormat = navigator.gpu.getPreferredCanvasFormat();
@@ -131,6 +139,8 @@ export abstract class Renderer {
         if (this.prevTime == 0) {
             this.prevTime = time;
         }
+
+        benchOnFrame(time);
 
         let deltaTime = time - this.prevTime;
         this.camera.onFrame(deltaTime);

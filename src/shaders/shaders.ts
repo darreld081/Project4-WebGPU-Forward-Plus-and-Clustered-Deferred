@@ -23,19 +23,28 @@ import clusteringComputeRaw from './clustering.cs.wgsl?raw';
 
 // Note that these are declared in a somewhat roundabout way because otherwise minification will drop variables
 // that are unused in host side code.
+
+//add ability to set parameters in url to quickly change input params
+const urlParams = new URLSearchParams(window.location.search);
+function param(name: string, defaultValue: number, integer = true) {
+    const v = Number(urlParams.get(name));
+    if (!urlParams.has(name) || !Number.isFinite(v) || v <= 0) return defaultValue;
+    return integer ? Math.floor(v) : v;
+}
+
 export const constants = {
     bindGroup_scene: 0,
     bindGroup_model: 1,
     bindGroup_material: 2,
 
-    moveLightsWorkgroupSize: 128,
+    moveLightsWorkgroupSize: param('moveLightsWorkgroupSize', 128),
 
-    lightRadius: 2,
-    clusterX: 16,
-    clusterY: 16,
-    clusterZ: 16,
-    lightsPerCluster: 256,
-    clusterGroupSize: 32
+    lightRadius: param('lightRadius', 2, false),
+    clusterX: param('clusterX', 16),
+    clusterY: param('clusterY', 16),
+    clusterZ: param('clusterZ', 16),
+    lightsPerCluster: param('lightsPerCluster', 256),
+    clusterGroupSize: param('clusterGroupSize', 32)
 };
 
 // =================================

@@ -30,3 +30,24 @@ to implementation work. Complete the implementation early to leave time!
 - [dat.GUI](https://github.com/dataarts/dat.gui)
 - [stats.js](https://github.com/mrdoob/stats.js)
 - [wgpu-matrix](https://github.com/greggman/wgpu-matrix)
+
+## Performance benchmarking
+
+All timings are in **milliseconds**. A live readout (top-left, under the stats.js panel) shows the rolling mean of:
+`cpu` (frame-to-frame time), `moveLights`, `clustering`, `main` (naive / Forward+ render pass), `gbuffer`, `fullscreen`
+(deferred passes) and `gpuTotal` (sum of the render-path GPU passes, excluding `moveLights`).
+GPU pass times use WebGPU timestamp queries, which are not capped by vsync.
+
+For accurate timings launch Chrome with `--enable-webgpu-developer-features` (otherwise timestamps are quantized to ~100 us).
+For uncapped `cpu` frame time also use `--disable-frame-rate-limit --disable-gpu-vsync`.
+
+**GUI → Benchmark (ms):** `run current config` records warmup+sample frames for the active renderer;
+`run sweep` runs naive, forward+ and clustered deferred over the comma-separated `sweepLights` list;
+`download CSV` exports mean / median / p95 / min / max / std per pass, with the parameters of each run.
+
+**URL parameters** (values are baked into the shaders, so each change needs a reload):
+`?bench=1` (deterministic light motion), `numLights`, `mode` (`naive`, `forward+`, `clustered deferred`),
+`clusterX`, `clusterY`, `clusterZ`, `lightsPerCluster`, `lightRadius`, `clusterGroupSize`, `moveLightsWorkgroupSize`,
+`width`, `height`, `lights` (sweep list), and `auto=1` (run the sweep on load and download the CSV).
+
+Example: `http://localhost:5173/?bench=1&auto=1&clusterX=32&clusterY=32&clusterZ=32&lights=500,2000,5000`
