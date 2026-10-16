@@ -22,14 +22,12 @@ fn main(in: FragmentInput) -> GBufferOutput
     
     //sample color from tex
     let color = textureSample(diffuseTex, diffuseTexSampler, in.uv);
-    if (color.a < 0.5f) {
-        discard;
-    }
+    if (color.a < 0.5f) {discard;};
 
     var output: GBufferOutput;
-    out.alb = vec4f(color.rgb, 1);
-    out.pos = vec4f(in.pos, 1);
-    out.nor = vec4f(normalize(in.nor), 0);
+    output.alb = vec4f(color.rgb, 1);
+    output.pos = vec4f(in.pos, 1);
+    output.nor = vec4f(normalize(in.nor), 0);
 
     return output;
 }
