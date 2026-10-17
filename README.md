@@ -17,11 +17,13 @@ Tested on: Windows 11, i7-12700 @ 2.1GHz 32GB, NVIDIA T1000 4096MB (CETS Lab)
 
 In this project, 3 renderers were created for the Sponza scene, each supporting up to 5000 moving point lights.
 
-**Naive** 
+### Naive
 Every fragment is rendered in one pass, and in the process, each fragment is shaded by taking into account all lights within the scene.
-**Forward+** 
+
+### Forward+
 A preliminary compute pass assigns lights to a 3D grid of light clusters. Each fragment then simply loops over the lights in its cluster and calculates light contribution based on same-cluster lights only.
-**Clustered deferred** 
+
+### Clustered Deferred
 This method builds upon Forward+, with the same light clustering, but geometry is first rendered to a G-buffer (position, normal, albedo) and then a fullscreen pass shades each pixel at most once.
 
 The default parameter values for clustering was as follows: 16×16×16 = 4096 total clusters, at most 256 lights per cluster, light radius 2.
