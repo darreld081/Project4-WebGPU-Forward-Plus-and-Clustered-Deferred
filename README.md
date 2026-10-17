@@ -54,7 +54,7 @@ The second experiment involved measuring performance in terms of GPU runtime wit
 
 ![GPU time vs number of clusters](img/gpu_time_vs_num_clusters.png)
 
-| Grid | Clusters | clustering | gbuffer | gpu total | **total** |
+| Grid | Clusters | clustering | gbuffer | **total** |
 |---|---:|---:|---:|---:|---:|
 | 5³ | 125 | 2.05 | 8.06  | 46.49 |
 | 10³ | 1,000 | 2.02 | 7.95 | 46.19 |
