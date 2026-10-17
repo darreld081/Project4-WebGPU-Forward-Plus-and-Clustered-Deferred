@@ -55,12 +55,12 @@ The second experiment involved measuring performance in terms of GPU runtime wit
 ![GPU time vs number of clusters](img/gpu_time_vs_num_clusters.png)
 
 | Grid | Clusters | clustering | gbuffer | **total** |
-|---|---:|---:|---:|---:|---:|
-| 5³ | 125 | 2.05 | 8.06  | 46.49 |
-| 10³ | 1,000 | 2.02 | 7.95 | 46.19 |
-| 15³ | 3,375 | 2.14 | 8.06 | **45.52** |
-| 20³ | 8,000 | 4.53 | 7.38 | 45.95 |
-| 25³ | 15,625 | 8.31 | 6.06 | 47.01 |
+|---|---:|---:|---:|---:|
+| 5x5x5 | 125 | 2.05 | 8.06  | 46.49 |
+| 10x10x10 | 1,000 | 2.02 | 7.95 | 46.19 |
+| 15x15x15 | 3,375 | 2.14 | 8.06 | **45.52** |
+| 20x20x20 | 8,000 | 4.53 | 7.38 | 45.95 |
+| 25x25x25 | 15,625 | 8.31 | 6.06 | 47.01 |
 
 More clusters make the clustering pass more expensive (we need to test every light against every cluster) but shortens the number of lights we have to evaluate per pixel. This results in a relatively flat timing, however, we do note that there is a slight minimum at a grid size of 15x15x15 indicating that this is the cluster number sweet spot.
 
